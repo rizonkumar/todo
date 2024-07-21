@@ -1,12 +1,14 @@
 const express = require("express");
-const { createToDo } = require("./types");
-const { todo, todo } = require("./db");
+const { createToDo, updateToDo } = require("./types");
+const { todo } = require("./db");
 
 const app = express();
 
 app.use(express.json());
+
 const PORT = process.env.PORT || 5000;
 
+// Route to create a new todo
 app.post("/todo", async function (req, res) {
   const createPayload = req.body;
   const parsedPayload = createToDo.safeParse(createPayload);
@@ -37,6 +39,7 @@ app.post("/todo", async function (req, res) {
   }
 });
 
+// Route to get all todos
 app.get("/todos", async function (req, res) {
   try {
     const todos = await todo.find();
@@ -49,9 +52,10 @@ app.get("/todos", async function (req, res) {
   }
 });
 
+// Route to mark a todo as completed
 app.put("/completed", async function (req, res) {
   const updatePayload = req.body;
-  const parsedPayload = updatePayload.safeParse(updatePayload);
+  const parsedPayload = updateToDo.safeParse(updatePayload);
   if (!parsedPayload.success) {
     res.status(400).json({
       msg: "You sent the wrong inputs",

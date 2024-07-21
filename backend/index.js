@@ -1,10 +1,11 @@
 const express = require("express");
 const { createToDo, updateToDo } = require("./types");
 const { todo } = require("./db");
-
+const cors = require("cors");
 const app = express();
 
 app.use(express.json());
+app.use(cors())
 
 const PORT = process.env.PORT || 5000;
 
@@ -64,18 +65,29 @@ app.put("/completed", async function (req, res) {
     return;
   }
 
-  await todo.update(
-    {
-      _id: req.body.id,
-    },
-    {
-      completed: true,
+  try {
+    const updatedTodo = await todo.findByIdAndUpdate(
+      req.body.id,
+      { completed: true },
+      { new: true }
+    );
+
+    if (!updatedTodo) {
+      return res.status(404).json({ msg: "Todo not found" });
     }
-  );
-  res.json({
-    msg: "Todo marked as completed"
-  })
+
+    res.json({
+      msg: "Todo marked as completed",
+      todo: updatedTodo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      msg: "Error updating todo item",
+      error: error.message,
+    });
+  }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
